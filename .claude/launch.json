@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shopping-list",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1"],
+      "port": 8765
+    },
+    {
+      "name": "hyperframes-preview",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["node_modules/hyperframes/bin/hyperframes.mjs", "preview", "--port", "3002", "--no-open"],
+      "port": 3002
+    }
+  ]
+}

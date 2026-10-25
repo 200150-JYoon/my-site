@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11월 원데이 클래스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg-outer: #1a1310;
+    --bg-1: #f6e7d3;
+    --bg-2: #f0c9a0;
+    --ink: #3b1f12;
+    --accent: #d9542b;
+    --dur: 5s;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-outer);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-family: "Black Han Sans", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  }
+
+  /* 9:16 무대: 화면에 꽉 맞게 */
+  .stage {
+    position: relative;
+    width: min(100vw, 100vh * 9 / 16);
+    aspect-ratio: 9 / 16;
+    container-type: size;
+    overflow: hidden;
+    background: radial-gradient(120% 80% at 50% 35%, var(--bg-1) 0%, var(--bg-2) 100%);
+    cursor: pointer;
+  }
+
+  /* 배경 장식 원 */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  .blob.b1 { width: 70cqw; height: 70cqw; left: -22cqw; top: -10cqh; background: #e9a066; }
+  .blob.b2 { width: 50cqw; height: 50cqw; right: -18cqw; bottom: 8cqh; background: #d9542b; }
+  .blob.b3 { width: 14cqw; height: 14cqw; right: 14cqw; top: 18cqh; background: #3b1f12; }
+
+  .text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2cqh;
+  }
+  .line { display: flex; line-height: 1; white-space: nowrap; }
+  .line.l1 { font-size: 38cqw; color: var(--accent); }
+  .line.l2, .line.l3 { font-size: 22cqw; color: var(--ink); }
+
+  .ch {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(40%) scale(0);
+  }
+
+  /* 재생 상태 */
+  .playing .ch {
+    animation:
+      pop 0.55s cubic-bezier(.34, 1.56, .64, 1) var(--d) forwards,
+      out 0.45s ease-in calc(4.4s + var(--o)) forwards;
+  }
+  .playing .blob {
+    animation:
+      blobIn 0.9s cubic-bezier(.34, 1.56, .64, 1) var(--d) forwards,
+      blobOut 0.5s ease-in 4.4s forwards;
+  }
+
+  @keyframes pop {
+    0%   { opacity: 0; transform: translateY(40%) scale(0) rotate(-12deg); }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  }
+  @keyframes out {
+    to { opacity: 0; transform: translateY(-30%) scale(0.6); }
+  }
+  @keyframes blobIn {
+    to { opacity: 0.9; transform: scale(1); }
+  }
+  @keyframes blobOut {
+    to { opacity: 0; transform: scale(1.15); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .playing .ch, .playing .blob { animation: none; opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage" title="클릭하면 다시 재생">
+    <div class="blob b1" style="--d:0s"></div>
+    <div class="blob b2" style="--d:0.15s"></div>
+    <div class="blob b3" style="--d:0.3s"></div>
+    <div class="text" id="text"></div>
+  </div>
+
+<script>
+  const LINES = [["11월", "l1"], ["원데이", "l2"], ["클래스", "l3"]];
+  const START = 0.35;   // 첫 글자 등장 시각(s)
+  const STEP  = 0.22;   // 글자 간 간격(s)
+  const LOOP  = 5000;   // 전체 길이(ms)
+
+  const stage = document.getElementById("stage");
+  const text  = document.getElementById("text");
+
+  let i = 0;
+  for (const [word, cls] of LINES) {
+    const line = document.createElement("div");
+    line.className = "line " + cls;
+    for (const c of word) {
+      const span = document.createElement("span");
+      span.className = "ch";
+      span.textContent = c;
+      span.style.setProperty("--d", (START + i * STEP).toFixed(2) + "s");
+      span.style.setProperty("--o", (i * 0.03).toFixed(2) + "s");
+      line.appendChild(span);
+      i++;
+    }
+    text.appendChild(line);
+  }
+
+  let timer;
+  function play() {
+    clearTimeout(timer);
+    stage.classList.remove("playing");
+    void stage.offsetWidth;            // 애니메이션 리셋
+    stage.classList.add("playing");
+    timer = setTimeout(play, LOOP);    // 5초마다 반복
+  }
+
+  stage.addEventListener("click", play);
+
+  // 폰트 로드 후 바로 재생 (최대 1.5초 대기)
+  Promise.race([
+    document.fonts.ready,
+    new Promise(r => setTimeout(r, 1500))
+  ]).then(play);
+</script>
+</body>
+</html>
